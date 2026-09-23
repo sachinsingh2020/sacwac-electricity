@@ -1,0 +1,32 @@
+{
+  "name": "sacwac-electricity",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Electricity Management System with Next.js and Salesforce",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "sfdx:lint": "eslint **/{aura,lwc}/**/*.js",
+    "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\""
+  },
+  "dependencies": {
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.453.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4",
+    "cloudinary": "^2.5.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14",
+    "postcss": "^8.4.47",
+    "autoprefixer": "^10.4.20",
+    "@lwc/eslint-plugin-lwc": "^3.1.0",
+    "@salesforce/eslint-config-lwc": "^4.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.5.3"
+  }
+}
