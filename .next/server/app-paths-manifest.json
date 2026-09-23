@@ -1,11 +1,15 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/tenants/[id]/page": "app/tenants/[id]/page.js",
-  "/tenants/new/page": "app/tenants/new/page.js",
-  "/page": "app/page.js",
   "/api/health/route": "app/api/health/route.js",
-  "/api/tenants/route": "app/api/tenants/route.js",
   "/api/tenants/[id]/route": "app/api/tenants/[id]/route.js",
-  "/settings/page": "app/settings/page.js",
-  "/api/settings/route": "app/api/settings/route.js"
+  "/api/settings/route": "app/api/settings/route.js",
+  "/api/readings/[id]/route": "app/api/readings/[id]/route.js",
+  "/api/readings/route": "app/api/readings/route.js",
+  "/api/tenants/route": "app/api/tenants/route.js",
+  "/api/upload/route": "app/api/upload/route.js",
+  "/page": "app/page.js",
+  "/tenants/[id]/page": "app/tenants/[id]/page.js",
+  "/rate/page": "app/rate/page.js",
+  "/tenants/new/page": "app/tenants/new/page.js",
+  "/settings/page": "app/settings/page.js"
 }
