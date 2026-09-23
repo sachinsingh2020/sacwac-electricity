@@ -5,19 +5,16 @@ import { useRouter } from 'next/navigation';
 import ReadingModal from '@/components/ReadingModal';
 import ImageModal from '@/components/ImageModal';
 import WhatsAppShare from '@/components/WhatsAppShare';
+import { Spinner } from '@/components/Loaders';
 import {
   ArrowLeft,
   Plus,
   Phone,
   Gauge,
-  Calendar,
-  IndianRupee,
   Clock,
-  CheckCircle2,
   AlertCircle,
   Image as ImageIcon,
   ImageOff,
-  Share2,
   ArrowUpDown,
   FileSpreadsheet,
   Check,
@@ -36,6 +33,7 @@ export default function TenantDetailPage({ params }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [selectedReadingForPhoto, setSelectedReadingForPhoto] = useState(null);
   const [viewMode, setViewMode] = useState('cards'); // 'cards' (mobile-first) or 'table'
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
   const fetchTenantData = useCallback(async () => {
     try {
@@ -62,6 +60,8 @@ export default function TenantDetailPage({ params }) {
   // Handle toggling payment status (Pending <-> Paid)
   const handleTogglePaymentStatus = async (reading) => {
     const nextStatus = reading.Payment_Status__c === 'Paid' ? 'Pending' : 'Paid';
+    setStatusUpdatingId(reading.Id);
+
     try {
       const res = await fetch(`/api/readings/${reading.Id}`, {
         method: 'PATCH',
@@ -70,14 +70,15 @@ export default function TenantDetailPage({ params }) {
       });
 
       if (!res.ok) throw new Error('Failed to update payment status');
-      
-      // Update local state optimistically
+
       setReadings((prev) =>
         prev.map((r) => (r.Id === reading.Id ? { ...r, Payment_Status__c: nextStatus } : r))
       );
     } catch (err) {
       console.error(err);
       alert('Could not update payment status: ' + err.message);
+    } finally {
+      setStatusUpdatingId(null);
     }
   };
 
@@ -138,34 +139,39 @@ export default function TenantDetailPage({ params }) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top Navbar */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            className="p-2 -ml-1 text-slate-600 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold text-xs">
-                {tenant.Room_Number__c}
-              </span>
-              <h1 className="text-base font-bold text-slate-900 truncate max-w-[170px]">
-                {tenant.Name}
-              </h1>
-            </div>
-            <p className="text-[11px] text-slate-500">Meter: {tenant.Meter_Number__c || 'N/A'}</p>
-          </div>
-        </div>
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <Link
+              href="/"
+              className="p-2 -ml-1 text-slate-600 hover:text-slate-900 rounded-full hover:bg-slate-100 transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
 
-        <button
-          onClick={() => setIsReadingModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Reading</span>
-        </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-900 font-bold text-xs shrink-0">
+                  Room {tenant.Room_Number__c}
+                </span>
+                <h1 className="text-lg font-extrabold text-slate-900 truncate min-w-0">
+                  {tenant.Name}
+                </h1>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Meter: <span className="font-mono font-semibold text-slate-700">{tenant.Meter_Number__c || 'N/A'}</span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsReadingModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Reading</span>
+          </button>
+        </div>
       </div>
 
       <div className="p-4 space-y-4">
@@ -303,13 +309,19 @@ export default function TenantDetailPage({ params }) {
                     {/* Paid status toggle button */}
                     <button
                       onClick={() => handleTogglePaymentStatus(reading)}
-                      className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all border ${
+                      disabled={statusUpdatingId === reading.Id}
+                      className={`flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all border min-w-[82px] ${
                         isPaid
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                           : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                      }`}
+                      } disabled:opacity-70 disabled:cursor-not-allowed`}
                     >
-                      {isPaid ? (
+                      {statusUpdatingId === reading.Id ? (
+                        <>
+                          <Spinner size="sm" color={isPaid ? 'amber' : 'white'} />
+                          <span>{isPaid ? 'Updating' : 'Updating'}</span>
+                        </>
+                      ) : isPaid ? (
                         <>
                           <Check className="w-3 h-3 stroke-[3px]" />
                           <span>Paid</span>
@@ -437,13 +449,14 @@ export default function TenantDetailPage({ params }) {
                         <td className="py-3 px-2">
                           <button
                             onClick={() => handleTogglePaymentStatus(r)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            disabled={statusUpdatingId === r.Id}
+                            className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold min-w-[60px] ${
                               isPaid
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-rose-100 text-rose-800'
-                            }`}
+                            } disabled:opacity-70 disabled:cursor-not-allowed`}
                           >
-                            {isPaid ? 'Paid' : 'Due'}
+                            {statusUpdatingId === r.Id ? <Spinner size="sm" color="amber" /> : isPaid ? 'Paid' : 'Due'}
                           </button>
                         </td>
                         <td className="py-3 px-3">
